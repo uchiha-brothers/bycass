@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>404 - Page Not Found</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+
+<style>
+:root{
+    --bg:#0b0f17;
+    --card:#111827;
+    --text:#ffffff;
+    --sub:#9ca3af;
+    --accent:#3b82f6;
+}
+
+body.light{
+    --bg:#f3f4f6;
+    --card:#ffffff;
+    --text:#111827;
+    --sub:#6b7280;
+}
+
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+    font-family:'Inter',sans-serif;
+}
+
+body{
+    background:var(--bg);
+    color:var(--text);
+    min-height:100vh;
+    display:flex;
+    flex-direction:column;
+    overflow:hidden;
+}
+
+/* Canvas */
+canvas{
+    position:fixed;
+    inset:0;
+    z-index:-1;
+}
+
+/* Header */
+.header{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    padding:18px 22px;
+}
+
+.back{
+    font-size:20px;
+    cursor:pointer;
+    opacity:0.8;
+}
+
+.toggle{
+    display:flex;
+    align-items:center;
+    gap:10px;
+}
+
+.switch{
+    position:relative;
+    width:46px;
+    height:24px;
+}
+
+.switch input{
+    opacity:0;
+    width:0;
+    height:0;
+}
+
+.slider{
+    position:absolute;
+    inset:0;
+    background:#374151;
+    border-radius:20px;
+    transition:.3s;
+}
+
+.slider:before{
+    content:"";
+    position:absolute;
+    width:18px;
+    height:18px;
+    left:3px;
+    top:3px;
+    background:white;
+    border-radius:50%;
+    transition:.3s;
+}
+
+input:checked + .slider{
+    background:#d1d5db;
+}
+
+input:checked + .slider:before{
+    transform:translateX(22px);
+}
+
+/* Main */
+.container{
+    flex:1;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    padding:20px;
+}
+
+.card{
+    background:rgba(17,24,39,0.85);
+    border:1px solid rgba(255,255,255,0.05);
+    padding:50px 40px;
+    border-radius:20px;
+    text-align:center;
+    width:100%;
+    max-width:420px;
+    box-shadow:0 20px 60px rgba(0,0,0,0.4);
+}
+
+/* Better typography */
+.code{
+    font-size:64px;
+    font-weight:700;
+    letter-spacing:-2px;
+}
+
+.title{
+    font-size:22px;
+    font-weight:600;
+    margin-top:10px;
+}
+
+.desc{
+    font-size:15px;
+    color:var(--sub);
+    margin-top:15px;
+    line-height:1.6;
+}
+
+.btn{
+    margin-top:28px;
+    display:inline-block;
+    padding:12px 28px;
+    background:linear-gradient(135deg,#2563eb,#3b82f6);
+    color:white;
+    text-decoration:none;
+    border-radius:10px;
+    font-weight:600;
+    transition:.3s;
+}
+
+.btn:hover{
+    transform:translateY(-2px);
+}
+
+/* Mobile Adjust */
+@media(max-width:480px){
+    .code{font-size:48px;}
+    .card{padding:40px 25px;}
+}
+</style>
+</head>
+<body>
+
+<canvas id="bg"></canvas>
+
+<div class="header">
+    <div class="back" onclick="history.back()">←</div>
+    <div class="toggle">
+        <label class="switch">
+            <input type="checkbox" id="theme">
+            <span class="slider"></span>
+        </label>
+        <span id="modeText">Dark</span>
+    </div>
+</div>
+
+<div class="container">
+    <div class="card">
+        <div class="code">404</div>
+        <div class="title">Page Not Found</div>
+        <div class="desc">
+            The page you're looking for doesn't exist or has been moved.
+        </div>
+        <a href="/" class="btn">Go to Homepage</a>
+    </div>
+</div>
+
+<script>
+/* Theme */
+const theme=document.getElementById("theme");
+const modeText=document.getElementById("modeText");
+theme.addEventListener("change",()=>{
+    document.body.classList.toggle("light");
+    modeText.textContent=theme.checked?"Light":"Dark";
+});
+
+/* ==== SUPER LIGHTWEIGHT BACKGROUND ==== */
+
+const canvas=document.getElementById("bg");
+const ctx=canvas.getContext("2d");
+
+let particles=[];
+let mouse={x:null,y:null};
+
+const isMobile=/Mobi|Android/i.test(navigator.userAgent);
+const particleCount=isMobile?35:70;   // Reduced for smoothness
+const maxDist=isMobile?90:120;        // Smaller connect distance
+
+function resize(){
+    canvas.width=innerWidth;
+    canvas.height=innerHeight;
+}
+window.addEventListener("resize",resize);
+resize();
+
+window.addEventListener("mousemove",e=>{
+    mouse.x=e.clientX;
+    mouse.y=e.clientY;
+});
+
+class Particle{
+    constructor(){
+        this.x=Math.random()*canvas.width;
+        this.y=Math.random()*canvas.height;
+        this.vx=(Math.random()-0.5)*0.4;
+        this.vy=(Math.random()-0.5)*0.4;
+        this.size=Math.random()*1.8+0.8;
+    }
+    update(){
+        this.x+=this.vx;
+        this.y+=this.vy;
+
+        if(this.x<0||this.x>canvas.width) this.vx*=-1;
+        if(this.y<0||this.y>canvas.height) this.vy*=-1;
+    }
+    draw(){
+        ctx.beginPath();
+        ctx.arc(this.x,this.y,this.size,0,Math.PI*2);
+        ctx.fillStyle="rgba(255,255,255,0.8)";
+        ctx.fill();
+    }
+}
+
+for(let i=0;i<particleCount;i++){
+    particles.push(new Particle());
+}
+
+function connect(){
+    for(let a=0;a<particles.length;a++){
+        for(let b=a+1;b<particles.length;b++){
+            let dx=particles[a].x-particles[b].x;
+            let dy=particles[a].y-particles[b].y;
+            let dist=Math.sqrt(dx*dx+dy*dy);
+            if(dist<maxDist){
+                ctx.strokeStyle="rgba(255,255,255,0.08)";
+                ctx.lineWidth=1;
+                ctx.beginPath();
+                ctx.moveTo(particles[a].x,particles[a].y);
+                ctx.lineTo(particles[b].x,particles[b].y);
+                ctx.stroke();
+            }
+        }
+    }
+}
+
+function animate(){
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+
+    particles.forEach(p=>{
+        p.update();
+        p.draw();
+    });
+
+    connect();
+    requestAnimationFrame(animate);
+}
+
+animate();
+</script>
+
+</body>
+</html>
