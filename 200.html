@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>404 Page</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+
+<style>
+:root{
+    --bg:#0f0f12;
+    --card:#18181c;
+    --text:#ffffff;
+    --subtext:#b5b5b5;
+    --button:#2d6cdf;
+    --grid:rgba(255,255,255,0.03);
+}
+
+body.light{
+    --bg:#f4f4f4;
+    --card:#ffffff;
+    --text:#111111;
+    --subtext:#555;
+    --grid:rgba(0,0,0,0.04);
+}
+
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+    font-family:'Inter',sans-serif;
+}
+
+body{
+    background:var(--bg);
+    color:var(--text);
+    min-height:100vh;
+    display:flex;
+    flex-direction:column;
+    overflow:hidden;
+}
+
+/* ===== Canvas Background ===== */
+canvas{
+    position:fixed;
+    top:0;
+    left:0;
+    z-index:-1;
+}
+
+/* Header */
+.header{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    padding:18px;
+    z-index:1;
+}
+
+.back{
+    font-size:22px;
+    cursor:pointer;
+}
+
+/* Toggle */
+.toggle{
+    display:flex;
+    align-items:center;
+    gap:10px;
+}
+
+.switch{
+    position:relative;
+    width:50px;
+    height:26px;
+}
+
+.switch input{
+    opacity:0;
+    width:0;
+    height:0;
+}
+
+.slider{
+    position:absolute;
+    cursor:pointer;
+    top:0;
+    left:0;
+    right:0;
+    bottom:0;
+    background:#444;
+    transition:.4s;
+    border-radius:30px;
+}
+
+.slider:before{
+    position:absolute;
+    content:"";
+    height:20px;
+    width:20px;
+    left:3px;
+    bottom:3px;
+    background:white;
+    transition:.4s;
+    border-radius:50%;
+}
+
+input:checked + .slider{
+    background:#ccc;
+}
+
+input:checked + .slider:before{
+    transform:translateX(24px);
+}
+
+/* Card */
+.container{
+    flex:1;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    padding:20px;
+    z-index:1;
+}
+
+.card{
+    background:var(--card);
+    padding:60px 40px;
+    border-radius:16px;
+    text-align:center;
+    max-width:450px;
+    width:100%;
+    box-shadow:0 0 0 1px rgba(255,255,255,0.05);
+    backdrop-filter: blur(10px);
+}
+
+.card h1{
+    font-size:120px;
+    font-weight:700;
+}
+
+.card h2{
+    margin-top:10px;
+    font-size:28px;
+    font-weight:600;
+}
+
+.card p{
+    margin-top:20px;
+    font-size:16px;
+    color:var(--subtext);
+    line-height:1.6;
+}
+
+.btn{
+    margin-top:30px;
+    display:inline-block;
+    padding:14px 30px;
+    background:var(--button);
+    color:white;
+    text-decoration:none;
+    border-radius:10px;
+    font-weight:600;
+    transition:0.3s;
+}
+
+.btn:hover{
+    opacity:0.85;
+}
+</style>
+</head>
+<body>
+
+<canvas id="bgCanvas"></canvas>
+
+<div class="header">
+    <div class="back" onclick="history.back()">←</div>
+    <div class="toggle">
+        <label class="switch">
+            <input type="checkbox" id="themeToggle">
+            <span class="slider"></span>
+        </label>
+        <span id="modeText">Dark</span>
+    </div>
+</div>
+
+<div class="container">
+    <div class="card">
+        <h1>404</h1>
+        <h2>Page Not Found</h2>
+        <p>
+            Sorry, the page you are looking for does not exist
+            or may have been moved.
+        </p>
+        <a href="/" class="btn">Go to Homepage</a>
+    </div>
+</div>
+
+<script>
+/* Theme Toggle */
+const toggle = document.getElementById("themeToggle");
+const modeText = document.getElementById("modeText");
+
+toggle.addEventListener("change", function(){
+    document.body.classList.toggle("light");
+    modeText.textContent = toggle.checked ? "Light" : "Dark";
+});
+
+/* ===== Premium Animated Canvas ===== */
+const canvas = document.getElementById("bgCanvas");
+const ctx = canvas.getContext("2d");
+
+let particles = [];
+const particleCount = 90;
+let mouse = {x:null, y:null};
+
+function resize(){
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+}
+window.addEventListener("resize", resize);
+resize();
+
+window.addEventListener("mousemove", e=>{
+    mouse.x = e.x;
+    mouse.y = e.y;
+});
+
+class Particle{
+    constructor(){
+        this.x = Math.random()*canvas.width;
+        this.y = Math.random()*canvas.height;
+        this.size = Math.random()*2+1;
+        this.speedX = (Math.random()-0.5)*0.3;
+        this.speedY = (Math.random()-0.5)*0.3;
+    }
+    update(){
+        this.x += this.speedX;
+        this.y += this.speedY;
+
+        // Parallax effect
+        if(mouse.x && mouse.y){
+            let dx = this.x - mouse.x;
+            let dy = this.y - mouse.y;
+            let dist = Math.sqrt(dx*dx + dy*dy);
+            if(dist < 120){
+                this.x += dx/dist;
+                this.y += dy/dist;
+            }
+        }
+
+        if(this.x<0||this.x>canvas.width) this.speedX*=-1;
+        if(this.y<0||this.y>canvas.height) this.speedY*=-1;
+    }
+    draw(){
+        ctx.beginPath();
+        ctx.arc(this.x,this.y,this.size,0,Math.PI*2);
+        ctx.fillStyle="rgba(255,255,255,0.8)";
+        ctx.shadowBlur=15;
+        ctx.shadowColor="rgba(255,255,255,0.8)";
+        ctx.fill();
+    }
+}
+
+for(let i=0;i<particleCount;i++){
+    particles.push(new Particle());
+}
+
+function connect(){
+    for(let a=0;a<particles.length;a++){
+        for(let b=a;b<particles.length;b++){
+            let dx = particles[a].x - particles[b].x;
+            let dy = particles[a].y - particles[b].y;
+            let distance = dx*dx + dy*dy;
+
+            if(distance < 10000){
+                ctx.strokeStyle="rgba(255,255,255,0.08)";
+                ctx.lineWidth=1;
+                ctx.beginPath();
+                ctx.moveTo(particles[a].x, particles[a].y);
+                ctx.lineTo(particles[b].x, particles[b].y);
+                ctx.stroke();
+            }
+        }
+    }
+}
+
+function drawGrid(){
+    ctx.strokeStyle=getComputedStyle(document.body).getPropertyValue('--grid');
+    ctx.lineWidth=1;
+
+    const gap=80;
+    for(let x=0;x<canvas.width;x+=gap){
+        ctx.beginPath();
+        ctx.moveTo(x,0);
+        ctx.lineTo(x,canvas.height);
+        ctx.stroke();
+    }
+    for(let y=0;y<canvas.height;y+=gap){
+        ctx.beginPath();
+        ctx.moveTo(0,y);
+        ctx.lineTo(canvas.width,y);
+        ctx.stroke();
+    }
+}
+
+function animate(){
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+
+    drawGrid();
+
+    particles.forEach(p=>{
+        p.update();
+        p.draw();
+    });
+
+    connect();
+
+    requestAnimationFrame(animate);
+}
+
+animate();
+</script>
+
+</body>
+</html>
